@@ -42,8 +42,10 @@ Serial.println("Lageshtia Ajrit: " + String(hum));
 Serial.println("Temperatura: " + String(temp) + " Celsius");
 Serial.print("Lageshtia Dheut: "); Serial.println(analogRead(soil));
 drita = analogRead(0); 
+float drita_perqindje = drita / 1023.0;
+drita_perqindje = pow(drita_perqindje, 2.0);
 Serial.print("Drita: ");
-Serial.println(drita);
+Serial.println(drita_perqindje);
 sensors_event_t event;
 bmp.getEvent(&event);
  if (event.pressure)
