@@ -1,11 +1,4 @@
 sensor:
-  # Weather prediction
-  - platform: darksky
-    api_key: 5b130ddf1e167e41fd500173f95dde44
-    monitored_conditions:
-      - temperature
-      - precip_probability
-
   - platform: mqtt
     state_topic: 'tele/wemos/SENSOR'
     name: "Pub Temp"
