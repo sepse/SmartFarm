@@ -1,0 +1,73 @@
+sensor:
+  # Weather prediction
+  - platform: darksky
+    api_key: 5b130ddf1e167e41fd500173f95dde44
+    monitored_conditions:
+      - temperature
+      - precip_probability
+
+  - platform: mqtt
+    state_topic: 'tele/wemos/SENSOR'
+    name: "Pub Temp"
+    value_template: '{{ value_json["SHT3X-0x44"].Temperature }}'
+    unit_of_measurement: "ºC"
+  - platform: mqtt
+    state_topic: 'tele/wemos/SENSOR'
+    name: "Pub Hum"
+    value_template: '{{ value_json["SHT3X-0x44"].Humidity }}'
+    unit_of_measurement: "%"
+  - platform: mqtt
+    state_topic: 'tele/wemos/SENSOR'
+    name: "Light"
+    value_template: '{{ value_json.ANALOG.A0 }}'
+    unit_of_measurement: "$"
+    
+  - platform: mqtt
+    state_topic: 'oborri/temperatura'
+    name: "Temperatura Ajrit"
+    unit_of_measurement: "ºC"
+    expire_after: 60
+  - platform: mqtt
+    state_topic: 'oborri/lageshtia'
+    name: "Lageshtia Ajrit"
+    unit_of_measurement: "%"
+    expire_after: 60
+  - platform: mqtt
+    state_topic: 'oborri/dheu'
+    name: "Lag Dheut 1"
+    unit_of_measurement: "U"
+    expire_after: 60    
+  - platform: mqtt
+    state_topic: 'oborri/dheu2'
+    name: "Lag Dheut 2"
+    unit_of_measurement: "U"
+    expire_after: 60
+  - platform: mqtt
+    state_topic: 'oborri/shtypja'
+    name: "Shtypja Ajrit"
+    unit_of_measurement: "hPa"
+    expire_after: 60
+  - platform: mqtt
+    state_topic: 'oborri/drita'
+    name: "Drita"
+    unit_of_measurement: "$"
+    expire_after: 60
+  - platform: mqtt
+    state_topic: 'oborri/uji'
+    name: "Ujitja"
+    unit_of_measurement: "L/m"
+    expire_after: 60
+    
+
+switch:
+  - platform: mqtt
+    name: "drita pub"
+    command_topic: "cmnd/sonoff/POWER"
+    state_topic: "stat/sonoff/POWER"
+ 
+  - platform: mqtt
+    name: "pompa oborrit"
+    command_topic: "cmnd/pompa/POWER"
+    state_topic: "stat/pompa/POWER"
+    
+    
