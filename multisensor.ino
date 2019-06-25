@@ -5,24 +5,31 @@
 #include <SPI.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <Ticker.h>
 
 #define DHTPIN 23     
 #define DHTTYPE DHT22   
 DHT dht(DHTPIN, DHTTYPE); 
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 
+Ticker tickeri;
+
 int i;
-int drita = 0;  
+int dritaPin = 35;  
+
 //Variables
 int chk;
 float hum;  //Humidity
 float temp; //Temperature
 
+sensors_event_t event;
+float drita_perqindje;
+
 int soil = 34; // soil moisture #1
 int soil2 = 32; // soil moisture #2
 
 //FlowVariables
-byte sensorInterrupt = 33;  //flowsensor
+byte sensorInterrupt = 33;  // 0 = digital pin 2
 byte sensorPin = 33;
 float calibrationFactor = 4.5;
 
@@ -35,15 +42,15 @@ unsigned long totalMilliLitres;
 unsigned long oldTime;
 
 // Wifi: SSID and password
-const PROGMEM char* WIFI_SSID = "PHP";
-const PROGMEM char* WIFI_PASSWORD = "evgjenia";
+const PROGMEM char* WIFI_SSID = "SSID";
+const PROGMEM char* WIFI_PASSWORD = "PASSWORD";
 
 // MQTT: ID, server IP, port, username and password
 const PROGMEM char* MQTT_CLIENT_ID = "office_dht22";
-const PROGMEM char* MQTT_SERVER_IP = "192.168.5.116";
+const PROGMEM char* MQTT_SERVER_IP = "192.168.0.47";
 const PROGMEM uint16_t MQTT_SERVER_PORT = 1883;
-const PROGMEM char* MQTT_USER = "hass";
-const PROGMEM char* MQTT_PASSWORD = "hass";
+const PROGMEM char* MQTT_USER = "USER";
+const PROGMEM char* MQTT_PASSWORD = "PASSWORD";
 
 const PROGMEM char* MQTT_TEMP_TOPIC = "oborri/temperatura";
 const PROGMEM char* MQTT_HUM_TOPIC = "oborri/lageshtia";
@@ -77,6 +84,18 @@ void reconnect() {
     }
   }
 }
+
+void all_sensors(){
+client.publish(MQTT_TEMP_TOPIC, String(temp).c_str(), true);
+client.publish(MQTT_HUM_TOPIC, String(hum).c_str(), true);
+client.publish(MQTT_SOIL_TOPIC, String(analogRead(soil)).c_str(), true);
+client.publish(MQTT_SOIL_TOPIC2, String(analogRead(soil2)).c_str(), true);
+client.publish(MQTT_PRESS_TOPIC, String(event.pressure).c_str(), true);
+client.publish(MQTT_DRITA_TOPIC, String(drita_perqindje).c_str(), true);
+client.publish(MQTT_UJI_TOPIC, String(totalMilliLitres).c_str(), true);
+totalMilliLitres = 0;
+}
+
 
 void setup(){
 Serial.begin(115200);
@@ -119,7 +138,8 @@ Serial.println("");
   oldTime           = 0;
 
   attachInterrupt(sensorInterrupt, pulseCounter, FALLING);
-  
+  tickeri.attach(300, all_sensors);
+
 dht.begin();
 
 }
@@ -160,13 +180,13 @@ Serial.println("Lageshtia Ajrit: " + String(hum));
 Serial.println("Temperatura: " + String(temp) + " Celsius");
 Serial.print("Lageshtia Dheut: "); Serial.println(analogRead(soil));
 Serial.print("Lageshtia Dheut2: "); Serial.println(analogRead(soil2));
-drita = analogRead(0); 
-float drita_perqindje = drita / 1023.0;
+int drita = analogRead(dritaPin); 
+drita_perqindje = drita / 1023.0;
 drita_perqindje = pow(drita_perqindje, 2.0);
 
 Serial.print("Drita: ");
 Serial.println(drita_perqindje);
-sensors_event_t event;
+
 bmp.getEvent(&event);
  if (event.pressure)
   {
@@ -179,17 +199,10 @@ bmp.getEvent(&event);
   {
     Serial.println("Sensor error");
   }
-client.publish(MQTT_TEMP_TOPIC, String(temp).c_str(), true);
-client.publish(MQTT_HUM_TOPIC, String(hum).c_str(), true);
-client.publish(MQTT_SOIL_TOPIC, String(analogRead(soil)).c_str(), true);
-client.publish(MQTT_SOIL_TOPIC2, String(analogRead(soil2)).c_str(), true);
-client.publish(MQTT_PRESS_TOPIC, String(event.pressure).c_str(), true);
-client.publish(MQTT_DRITA_TOPIC, String(drita_perqindje).c_str(), true);
-client.publish(MQTT_UJI_TOPIC, String(flowRate).c_str(), true);
 
 Serial.println();
 
-delay(5000);
+delay(1000);
 
 }
 
